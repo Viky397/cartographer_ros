@@ -166,6 +166,8 @@ bool Node::HandleSubmapQuery(
     ::cartographer_ros_msgs::SubmapQuery::Response& response) {
   absl::MutexLock lock(&mutex_);
   map_builder_bridge_.HandleSubmapQuery(request, response);
+  std::cout << "STEP 2: HandleSubmapQuery" << std::endl;
+
   return true;
 }
 
@@ -182,19 +184,26 @@ bool Node::HandleTrajectoryQuery(
                << response.status.message;
     return true;
   }
+  else{
+	  std::cout << "STEP 1: HandleTrajectoryQuery" << std::endl;
+  }
   map_builder_bridge_.HandleTrajectoryQuery(request, response);
+  std::cout << "STEP 1: HandleTrajectoryQuery" << std::endl;
   return true;
 }
 
 void Node::PublishSubmapList(const ::ros::WallTimerEvent& unused_timer_event) {
   absl::MutexLock lock(&mutex_);
   submap_list_publisher_.publish(map_builder_bridge_.GetSubmapList());
+  std::cout << "STEP 4: PublishSubmapList" << std::endl;
+
 }
 
 void Node::AddExtrapolator(const int trajectory_id,
                            const TrajectoryOptions& options) {
   constexpr double kExtrapolationEstimationTimeSec = 0.001;  // 1 ms
   CHECK(extrapolators_.count(trajectory_id) == 0);
+  std::cout << "STEP 5: AddExtrapolator" << std::endl;
   const double gravity_time_constant =
       node_options_.map_builder_options.use_trajectory_builder_3d()
           ? options.trajectory_builder_options.trajectory_builder_3d_options()
@@ -329,6 +338,7 @@ void Node::PublishLocalTrajectoryData(const ::ros::TimerEvent& timer_event) {
 void Node::PublishTrajectoryNodeList(
     const ::ros::WallTimerEvent& unused_timer_event) {
   if (trajectory_node_list_publisher_.getNumSubscribers() > 0) {
+	std::cout << "STEP 6: PublishTrajectoryNodeList" << std::endl;
     absl::MutexLock lock(&mutex_);
     trajectory_node_list_publisher_.publish(
         map_builder_bridge_.GetTrajectoryNodeList());
@@ -338,6 +348,8 @@ void Node::PublishTrajectoryNodeList(
 void Node::PublishLandmarkPosesList(
     const ::ros::WallTimerEvent& unused_timer_event) {
   if (landmark_poses_list_publisher_.getNumSubscribers() > 0) {
+	std::cout << "STEP 7: PublishLandmarkPosesList" << std::endl;
+
     absl::MutexLock lock(&mutex_);
     landmark_poses_list_publisher_.publish(
         map_builder_bridge_.GetLandmarkPosesList());
@@ -509,6 +521,9 @@ bool Node::ValidateTopicNames(const TrajectoryOptions& options) {
       LOG(ERROR) << "Topic name [" << topic << "] is already used.";
       return false;
     }
+    else{
+    	std::cout << "TRAJECTORY IS VALID: " << std::endl;
+    }
   }
   return true;
 }
@@ -517,6 +532,7 @@ cartographer_ros_msgs::StatusResponse Node::TrajectoryStateToStatus(
     const int trajectory_id, const std::set<TrajectoryState>& valid_states) {
   const auto trajectory_states = map_builder_bridge_.GetTrajectoryStates();
   cartographer_ros_msgs::StatusResponse status_response;
+  std::cout << "HANDLESTARTTRAJECTORYSTATUS: " << std::endl;
 
   const auto it = trajectory_states.find(trajectory_id);
   if (it == trajectory_states.end()) {
@@ -579,7 +595,6 @@ bool Node::HandleStartTrajectory(
   TrajectoryOptions trajectory_options;
   std::tie(std::ignore, trajectory_options) = LoadOptions(
       request.configuration_directory, request.configuration_basename);
-
   if (request.use_initial_pose) {
     const auto pose = ToRigid3d(request.initial_pose);
     if (!pose.IsValid()) {
@@ -623,6 +638,8 @@ bool Node::HandleStartTrajectory(
     LOG(ERROR) << response.status.message;
     response.status.code = cartographer_ros_msgs::StatusCode::INVALID_ARGUMENT;
   } else {
+    std::cout << "HANDLESTARTTRAJECTORY: " << std::endl;
+
     response.status.message = "Success.";
     response.trajectory_id = AddTrajectory(trajectory_options);
     response.status.code = cartographer_ros_msgs::StatusCode::OK;
@@ -811,6 +828,7 @@ void Node::HandleLandmarkMessage(
   if (!sensor_samplers_.at(trajectory_id).landmark_sampler.Pulse()) {
     return;
   }
+  std::cout << "HANDLELANDMARKMESSAGGE" << std::endl;
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLandmarkMessage(sensor_id, msg);
 }
@@ -823,6 +841,8 @@ void Node::HandleImuMessage(const int trajectory_id,
     return;
   }
   auto sensor_bridge_ptr = map_builder_bridge_.sensor_bridge(trajectory_id);
+  std::cout << "HANDLEIMUMESSAGGE" << std::endl;
+
   auto imu_data_ptr = sensor_bridge_ptr->ToImuData(msg);
   if (imu_data_ptr != nullptr) {
     extrapolators_.at(trajectory_id).AddImuData(*imu_data_ptr);
@@ -837,6 +857,8 @@ void Node::HandleLaserScanMessage(const int trajectory_id,
   if (!sensor_samplers_.at(trajectory_id).rangefinder_sampler.Pulse()) {
     return;
   }
+  std::cout << "HANDLELASERMESSAGGE" << std::endl;
+
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanMessage(sensor_id, msg);
 }
@@ -848,6 +870,8 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
   if (!sensor_samplers_.at(trajectory_id).rangefinder_sampler.Pulse()) {
     return;
   }
+  std::cout << "HANDLElaserRemoveMESSAGGE" << std::endl;
+
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);
 }
