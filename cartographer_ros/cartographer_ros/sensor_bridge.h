@@ -66,6 +66,8 @@ class SensorBridge {
                         const sensor_msgs::Imu::ConstPtr& msg);
   void HandleLaserScanMessage(const std::string& sensor_id,
                               const sensor_msgs::LaserScan::ConstPtr& msg);
+  void HandleLaserScanRemoveMessage(const std::string& sensor_id,
+                              const sensor_msgs::LaserScan::ConstPtr& msg);
   void HandleMultiEchoLaserScanMessage(
       const std::string& sensor_id,
       const sensor_msgs::MultiEchoLaserScan::ConstPtr& msg);

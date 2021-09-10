@@ -849,7 +849,7 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
     return;
   }
   map_builder_bridge_.sensor_bridge(trajectory_id)
-      ->HandleLaserScanMessage(sensor_id, msg);
+      ->HandleLaserScanRemoveMessage(sensor_id, msg);
 }
 
 void Node::HandleMultiEchoLaserScanMessage(

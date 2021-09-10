@@ -161,6 +161,14 @@ void SensorBridge::HandleLaserScanMessage(
   HandleLaserScan(sensor_id, time, msg->header.frame_id, point_cloud);
 }
 
+void SensorBridge::HandleLaserScanRemoveMessage(
+    const std::string& sensor_id, const sensor_msgs::LaserScan::ConstPtr& msg) {
+  carto::sensor::PointCloudWithIntensities point_cloud;
+  carto::common::Time time;
+  std::tie(point_cloud, time) = ToPointCloudWithIntensities(*msg);
+  HandleLaserScan(sensor_id, time, msg->header.frame_id, point_cloud);
+}
+
 void SensorBridge::HandleMultiEchoLaserScanMessage(
     const std::string& sensor_id,
     const sensor_msgs::MultiEchoLaserScan::ConstPtr& msg) {
