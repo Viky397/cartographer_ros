@@ -362,6 +362,12 @@ Node::ComputeExpectedSensorIds(const TrajectoryOptions& options) const {
        ComputeRepeatedTopicNames(kLaserScanTopic, options.num_laser_scans)) {
     expected_topics.insert(SensorId{SensorType::RANGE, topic});
   }
+
+  for (const std::string& topic :
+       ComputeRepeatedTopicNames(kLaserScanRemoveTopic, options.num_laser_scans)) {
+    expected_topics.insert(SensorId{SensorType::RANGE, topic});
+  }
+
   for (const std::string& topic : ComputeRepeatedTopicNames(
            kMultiEchoLaserScanTopic, options.num_multi_echo_laser_scans)) {
     expected_topics.insert(SensorId{SensorType::RANGE, topic});
@@ -421,6 +427,16 @@ void Node::LaunchSubscribers(const TrajectoryOptions& options,
              this),
          topic});
   }
+
+  for (const std::string& topic :
+       ComputeRepeatedTopicNames(kLaserScanRemoveTopic, options.num_laser_scans)) {
+    subscribers_[trajectory_id].push_back(
+        {SubscribeWithHandler<sensor_msgs::LaserScan>(
+             &Node::HandleLaserScanRemoveMessage, trajectory_id, topic, &node_handle_,
+             this),
+         topic});
+  }
+
   for (const std::string& topic : ComputeRepeatedTopicNames(
            kMultiEchoLaserScanTopic, options.num_multi_echo_laser_scans)) {
     subscribers_[trajectory_id].push_back(
@@ -815,6 +831,17 @@ void Node::HandleImuMessage(const int trajectory_id,
 }
 
 void Node::HandleLaserScanMessage(const int trajectory_id,
+                                  const std::string& sensor_id,
+                                  const sensor_msgs::LaserScan::ConstPtr& msg) {
+  absl::MutexLock lock(&mutex_);
+  if (!sensor_samplers_.at(trajectory_id).rangefinder_sampler.Pulse()) {
+    return;
+  }
+  map_builder_bridge_.sensor_bridge(trajectory_id)
+      ->HandleLaserScanMessage(sensor_id, msg);
+}
+
+void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
                                   const std::string& sensor_id,
                                   const sensor_msgs::LaserScan::ConstPtr& msg) {
   absl::MutexLock lock(&mutex_);

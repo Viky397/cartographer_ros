@@ -103,6 +103,10 @@ class Node {
                         const sensor_msgs::Imu::ConstPtr& msg);
   void HandleLaserScanMessage(int trajectory_id, const std::string& sensor_id,
                               const sensor_msgs::LaserScan::ConstPtr& msg);
+
+  void HandleLaserScanRemoveMessage(int trajectory_id, const std::string& sensor_id,
+                              const sensor_msgs::LaserScan::ConstPtr& msg);
+
   void HandleMultiEchoLaserScanMessage(
       int trajectory_id, const std::string& sensor_id,
       const sensor_msgs::MultiEchoLaserScan::ConstPtr& msg);
