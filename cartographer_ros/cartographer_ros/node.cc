@@ -874,11 +874,10 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);
 
-  map_builder_ = map_builder_bridge_.getMapBuilder();
-  map_builder_.pose_graph.AddLaserRemoveData();
+  auto& map_builder = map_builder_bridge_.getMapBuilder();
+  map_builder.AddLaserRemoveData();
 
   // refer to laser insertion pipeline,
-  // call PoseGraph2D::AddLaserRemoveData
 }
 void Node::HandleMultiEchoLaserScanMessage(
     const int trajectory_id, const std::string& sensor_id,
