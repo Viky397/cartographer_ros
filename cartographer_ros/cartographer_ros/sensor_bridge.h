@@ -37,6 +37,8 @@
 #include "sensor_msgs/NavSatFix.h"
 #include "sensor_msgs/PointCloud2.h"
 
+namespace carto = ::cartographer;
+
 namespace cartographer_ros {
 
 // Converts ROS messages into SensorData in tracking frame for the MapBuilder.
@@ -66,8 +68,20 @@ class SensorBridge {
                         const sensor_msgs::Imu::ConstPtr& msg);
   void HandleLaserScanMessage(const std::string& sensor_id,
                               const sensor_msgs::LaserScan::ConstPtr& msg);
-  const auto HandleLaserScanRemoveMessage(const std::string& sensor_id,
+
+  carto::sensor::TimedPointCloudData HandleLaserScanRemoveMessage(const std::string& sensor_id,
                               const sensor_msgs::LaserScan::ConstPtr& msg);
+
+  carto::sensor::TimedPointCloudData HandleRangefinderRemover(const std::string& sensor_id,
+                           ::cartographer::common::Time time,
+                           const std::string& frame_id,
+                           const ::cartographer::sensor::TimedPointCloud& ranges);
+
+  carto::sensor::TimedPointCloudData HandleLaserScanRemover(
+        const std::string& sensor_id, ::cartographer::common::Time start_time,
+        const std::string& frame_id,
+        const ::cartographer::sensor::PointCloudWithIntensities& points);
+
   void HandleMultiEchoLaserScanMessage(
       const std::string& sensor_id,
       const sensor_msgs::MultiEchoLaserScan::ConstPtr& msg);
@@ -81,18 +95,12 @@ class SensorBridge {
       const std::string& sensor_id, ::cartographer::common::Time start_time,
       const std::string& frame_id,
       const ::cartographer::sensor::PointCloudWithIntensities& points);
-  const auto HandleLaserScanRemover(
-        const std::string& sensor_id, ::cartographer::common::Time start_time,
-        const std::string& frame_id,
-        const ::cartographer::sensor::PointCloudWithIntensities& points);
+
+
   void HandleRangefinder(const std::string& sensor_id,
                          ::cartographer::common::Time time,
                          const std::string& frame_id,
                          const ::cartographer::sensor::TimedPointCloud& ranges);
-  const auto HandleRangefinderRemover(const std::string& sensor_id,
-                           ::cartographer::common::Time time,
-                           const std::string& frame_id,
-                           const ::cartographer::sensor::TimedPointCloud& ranges);
 
   const int num_subdivisions_per_laser_scan_;
   std::map<std::string, cartographer::common::Time>

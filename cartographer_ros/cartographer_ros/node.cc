@@ -194,7 +194,7 @@ bool Node::HandleTrajectoryQuery(
 void Node::PublishSubmapList(const ::ros::WallTimerEvent& unused_timer_event) {
   absl::MutexLock lock(&mutex_);
   submap_list_publisher_.publish(map_builder_bridge_.GetSubmapList());
-  std::cout << "STEP 4: PublishSubmapList" << std::endl;
+  std::cout << "PublishSubmapList" << std::endl;
 
 }
 
@@ -862,6 +862,9 @@ void Node::HandleLaserScanMessage(const int trajectory_id,
       ->HandleLaserScanMessage(sensor_id, msg);
 }
 
+//MapBuilderBridge &map_builder_(){
+//   return *this->pMember;
+//}
 void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
                                   const std::string& sensor_id,
                                   const sensor_msgs::LaserScan::ConstPtr& msg) {
@@ -874,12 +877,11 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);
 
-  map_builder_interface. .sensor_bridge(trajectory_id)-> pose_graph_2d_.AddLaserRemoveData()
+  map_builder_bridge_.map_builder_->pose_graph.AddLaserRemoveData();
 
   // refer to laser insertion pipeline,
   // call PoseGraph2D::AddLaserRemoveData
 }
-
 void Node::HandleMultiEchoLaserScanMessage(
     const int trajectory_id, const std::string& sensor_id,
     const sensor_msgs::MultiEchoLaserScan::ConstPtr& msg) {

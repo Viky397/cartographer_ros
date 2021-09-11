@@ -161,13 +161,13 @@ void SensorBridge::HandleLaserScanMessage(
   HandleLaserScan(sensor_id, time, msg->header.frame_id, point_cloud);
 }
 
-const auto SensorBridge::HandleLaserScanRemoveMessage( //not a void, return laser scan
+carto::sensor::TimedPointCloudData SensorBridge::HandleLaserScanRemoveMessage(
     const std::string& sensor_id, const sensor_msgs::LaserScan::ConstPtr& msg) {
   carto::sensor::PointCloudWithIntensities point_cloud;
   carto::common::Time time;
   std::cout << "HANDLElaserRemoveMESSAGGE- sensor bridge" << std::endl;
   std::tie(point_cloud, time) = ToPointCloudWithIntensities(*msg);
-  const auto lasers_removed = HandleLaserScanRemover(sensor_id, time, msg->header.frame_id, point_cloud);
+  carto::sensor::TimedPointCloudData lasers_removed = HandleLaserScanRemover(sensor_id, time, msg->header.frame_id, point_cloud);
   return lasers_removed;
 }
 
@@ -233,13 +233,13 @@ void SensorBridge::HandleLaserScan(
   }
 }
 
-const auto SensorBridge::HandleLaserScanRemover(
+carto::sensor::TimedPointCloudData SensorBridge::HandleLaserScanRemover(
     const std::string& sensor_id, const carto::common::Time time,
     const std::string& frame_id,
     const carto::sensor::PointCloudWithIntensities& points) {
-  if (points.points.empty()) {
-    return;
-  }
+//  if (points.points.empty()) {
+//    return;
+//  }
   CHECK_LE(points.points.back().time, 0.f);
   // TODO(gaschler): Use per-point time instead of subdivisions.
   for (int i = 0; i != num_subdivisions_per_laser_scan_; ++i) {
@@ -271,9 +271,9 @@ const auto SensorBridge::HandleLaserScanRemover(
       point.time -= time_to_subdivision_end;
     }
     CHECK_EQ(subdivision.back().time, 0.f);
-    const auto lasers_removed = HandleRangefinderRemover(sensor_id, subdivision_time, frame_id, subdivision);
+    carto::sensor::TimedPointCloudData lasers_removed = HandleRangefinderRemover(sensor_id, subdivision_time, frame_id, subdivision);
+    return lasers_removed;
   }
-  return lasers_removed;
 }
 
 
@@ -296,7 +296,7 @@ void SensorBridge::HandleRangefinder(
   }
 }
 
-const auto SensorBridge::HandleRangefinderRemover(
+carto::sensor::TimedPointCloudData SensorBridge::HandleRangefinderRemover(
     const std::string& sensor_id, const carto::common::Time time,
     const std::string& frame_id, const carto::sensor::TimedPointCloud& ranges) {
   if (!ranges.empty()) {
@@ -309,7 +309,7 @@ const auto SensorBridge::HandleRangefinderRemover(
     trajectory_builder_->AddSensorData(
 
     		// no void, return carto::sensor... lines 249-253
-    		// addd to header, pass it along chain
+    		// add to header, pass it along chain
     		// in node, return
         sensor_id, carto::sensor::TimedPointCloudData{
                        time, sensor_to_tracking->translation().cast<float>(),
