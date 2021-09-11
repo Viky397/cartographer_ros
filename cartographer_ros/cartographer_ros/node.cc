@@ -166,7 +166,7 @@ bool Node::HandleSubmapQuery(
     ::cartographer_ros_msgs::SubmapQuery::Response& response) {
   absl::MutexLock lock(&mutex_);
   map_builder_bridge_.HandleSubmapQuery(request, response);
-  std::cout << "STEP 2: HandleSubmapQuery" << std::endl;
+  std::cout << "*HandleSubmapQuery*" << std::endl;
   return true;
 }
 
@@ -337,7 +337,7 @@ void Node::PublishLocalTrajectoryData(const ::ros::TimerEvent& timer_event) {
 void Node::PublishTrajectoryNodeList(
     const ::ros::WallTimerEvent& unused_timer_event) {
   if (trajectory_node_list_publisher_.getNumSubscribers() > 0) {
-	std::cout << "STEP 6: PublishTrajectoryNodeList" << std::endl;
+//	std::cout << "STEP 6: PublishTrajectoryNodeList" << std::endl;
     absl::MutexLock lock(&mutex_);
     trajectory_node_list_publisher_.publish(
         map_builder_bridge_.GetTrajectoryNodeList());
@@ -347,7 +347,7 @@ void Node::PublishTrajectoryNodeList(
 void Node::PublishLandmarkPosesList(
     const ::ros::WallTimerEvent& unused_timer_event) {
   if (landmark_poses_list_publisher_.getNumSubscribers() > 0) {
-	std::cout << "STEP 7: PublishLandmarkPosesList" << std::endl;
+//	std::cout << "STEP 7: PublishLandmarkPosesList" << std::endl;
 
     absl::MutexLock lock(&mutex_);
     landmark_poses_list_publisher_.publish(
@@ -531,7 +531,7 @@ cartographer_ros_msgs::StatusResponse Node::TrajectoryStateToStatus(
     const int trajectory_id, const std::set<TrajectoryState>& valid_states) {
   const auto trajectory_states = map_builder_bridge_.GetTrajectoryStates();
   cartographer_ros_msgs::StatusResponse status_response;
-  std::cout << "HANDLESTARTTRAJECTORYSTATUS: " << std::endl;
+  std::cout << "HANDLE START TRAJECTORY STATUS: " << std::endl;
 
   const auto it = trajectory_states.find(trajectory_id);
   if (it == trajectory_states.end()) {
@@ -827,7 +827,7 @@ void Node::HandleLandmarkMessage(
   if (!sensor_samplers_.at(trajectory_id).landmark_sampler.Pulse()) {
     return;
   }
-  std::cout << "HANDLELANDMARKMESSAGGE" << std::endl;
+//  std::cout << "HANDLE LANDMARK MESSAGE" << std::endl;
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLandmarkMessage(sensor_id, msg);
 }
@@ -840,7 +840,7 @@ void Node::HandleImuMessage(const int trajectory_id,
     return;
   }
   auto sensor_bridge_ptr = map_builder_bridge_.sensor_bridge(trajectory_id);
-  std::cout << "HANDLEIMUMESSAGGE" << std::endl;
+  std::cout << "HANDLE IMU MESSAGE" << std::endl;
 
   auto imu_data_ptr = sensor_bridge_ptr->ToImuData(msg);
   if (imu_data_ptr != nullptr) {
@@ -856,7 +856,7 @@ void Node::HandleLaserScanMessage(const int trajectory_id,
   if (!sensor_samplers_.at(trajectory_id).rangefinder_sampler.Pulse()) {
     return;
   }
-  std::cout << "HANDLELASERMESSAGGE" << std::endl;
+  std::cout << "HANDLE LASER MESSAGE" << std::endl;
 
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanMessage(sensor_id, msg);
@@ -869,7 +869,7 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
   if (!sensor_samplers_.at(trajectory_id).rangefinder_sampler.Pulse()) {
     return;
   }
-  std::cout << "HANDLElaserRemoveMESSAGGE" << std::endl;
+  std::cout << "HANDLE Laser Remove MESSAGE" << std::endl;
 
   carto::sensor::TimedPointCloudData returned_lasers = map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);

@@ -165,7 +165,7 @@ carto::sensor::TimedPointCloudData SensorBridge::HandleLaserScanRemoveMessage(
     const std::string& sensor_id, const sensor_msgs::LaserScan::ConstPtr& msg) {
   carto::sensor::PointCloudWithIntensities point_cloud;
   carto::common::Time time;
-  std::cout << "HANDLElaserRemoveMESSAGGE- sensor bridge" << std::endl;
+  std::cout << "1) SensorBridge::HandleLaserScanRemoveMessage" << std::endl;
   std::tie(point_cloud, time) = ToPointCloudWithIntensities(*msg);
   carto::sensor::TimedPointCloudData lasers_removed = HandleLaserScanRemover(sensor_id, time, msg->header.frame_id, point_cloud);
   return lasers_removed;
@@ -253,6 +253,8 @@ carto::sensor::TimedPointCloudData SensorBridge::HandleLaserScanRemover(
     if (start_index == end_index) {
       continue;
     }
+	std::cout << "2) SensorBridge::HandleLaserScanRemover" <<  std::endl;
+
     const double time_to_subdivision_end = subdivision.back().time;
     // `subdivision_time` is the end of the measurement so sensor::Collator will
     // send all other sensor data first.
@@ -304,9 +306,10 @@ carto::sensor::TimedPointCloudData SensorBridge::HandleRangefinderRemover(
   if (!ranges.empty()) {
     CHECK_LE(ranges.back().time, 0.f);
   }
+  std::cout << "3) SensorBridge::HandleRangefinderRemover" <<  std::endl;
+
   const auto sensor_to_tracking =
       tf_bridge_.LookupToTracking(time, CheckNoLeadingSlash(frame_id));
-  std::cout << "sensor_bridge: Handlerangefinder" << std::endl;
   return carto::sensor::TimedPointCloudData{
       time, sensor_to_tracking->translation().cast<float>(),
       carto::sensor::TransformTimedPointCloud(
