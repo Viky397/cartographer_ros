@@ -167,7 +167,6 @@ bool Node::HandleSubmapQuery(
   absl::MutexLock lock(&mutex_);
   map_builder_bridge_.HandleSubmapQuery(request, response);
   std::cout << "STEP 2: HandleSubmapQuery" << std::endl;
-
   return true;
 }
 
@@ -203,7 +202,7 @@ void Node::AddExtrapolator(const int trajectory_id,
                            const TrajectoryOptions& options) {
   constexpr double kExtrapolationEstimationTimeSec = 0.001;  // 1 ms
   CHECK(extrapolators_.count(trajectory_id) == 0);
-  std::cout << "STEP 5: AddExtrapolator" << std::endl;
+  std::cout << "AddExtrapolator" << std::endl;
   const double gravity_time_constant =
       node_options_.map_builder_options.use_trajectory_builder_3d()
           ? options.trajectory_builder_options.trajectory_builder_3d_options()
@@ -874,7 +873,8 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
 
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);
-  pose_graph_2d_.AddLaserRemoveData()
+
+  map_builder_interface. .sensor_bridge(trajectory_id)-> pose_graph_2d_.AddLaserRemoveData()
 
   // refer to laser insertion pipeline,
   // call PoseGraph2D::AddLaserRemoveData
