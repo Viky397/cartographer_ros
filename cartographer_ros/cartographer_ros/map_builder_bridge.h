@@ -72,6 +72,10 @@ class MapBuilderBridge {
   MapBuilderBridge(const MapBuilderBridge&) = delete;
   MapBuilderBridge& operator=(const MapBuilderBridge&) = delete;
 
+  std::unique_ptr<cartographer::mapping::MapBuilderInterface>& getMapBuilder(){
+	  return map_builder_;
+  }
+
   void LoadState(const std::string& state_filename, bool load_frozen_state);
   int AddTrajectory(
       const std::set<

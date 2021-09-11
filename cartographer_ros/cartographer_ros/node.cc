@@ -862,9 +862,6 @@ void Node::HandleLaserScanMessage(const int trajectory_id,
       ->HandleLaserScanMessage(sensor_id, msg);
 }
 
-//MapBuilderBridge &map_builder_(){
-//   return *this->pMember;
-//}
 void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
                                   const std::string& sensor_id,
                                   const sensor_msgs::LaserScan::ConstPtr& msg) {
@@ -877,7 +874,8 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
   map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);
 
-  map_builder_bridge_.map_builder_->pose_graph.AddLaserRemoveData();
+  map_builder_ = map_builder_bridge_.getMapBuilder();
+  map_builder_.pose_graph.AddLaserRemoveData();
 
   // refer to laser insertion pipeline,
   // call PoseGraph2D::AddLaserRemoveData
