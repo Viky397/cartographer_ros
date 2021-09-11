@@ -161,12 +161,14 @@ void SensorBridge::HandleLaserScanMessage(
   HandleLaserScan(sensor_id, time, msg->header.frame_id, point_cloud);
 }
 
-void SensorBridge::HandleLaserScanRemoveMessage(
+const auto SensorBridge::HandleLaserScanRemoveMessage( //not a void, return laser scan
     const std::string& sensor_id, const sensor_msgs::LaserScan::ConstPtr& msg) {
   carto::sensor::PointCloudWithIntensities point_cloud;
   carto::common::Time time;
+  std::cout << "HANDLElaserRemoveMESSAGGE- sensor bridge" << std::endl;
   std::tie(point_cloud, time) = ToPointCloudWithIntensities(*msg);
-  HandleLaserScan(sensor_id, time, msg->header.frame_id, point_cloud);
+  const auto lasers_removed = HandleLaserScanRemover(sensor_id, time, msg->header.frame_id, point_cloud);
+  return lasers_removed;
 }
 
 void SensorBridge::HandleMultiEchoLaserScanMessage(
@@ -231,6 +233,50 @@ void SensorBridge::HandleLaserScan(
   }
 }
 
+const auto SensorBridge::HandleLaserScanRemover(
+    const std::string& sensor_id, const carto::common::Time time,
+    const std::string& frame_id,
+    const carto::sensor::PointCloudWithIntensities& points) {
+  if (points.points.empty()) {
+    return;
+  }
+  CHECK_LE(points.points.back().time, 0.f);
+  // TODO(gaschler): Use per-point time instead of subdivisions.
+  for (int i = 0; i != num_subdivisions_per_laser_scan_; ++i) {
+    const size_t start_index =
+        points.points.size() * i / num_subdivisions_per_laser_scan_;
+    const size_t end_index =
+        points.points.size() * (i + 1) / num_subdivisions_per_laser_scan_;
+    carto::sensor::TimedPointCloud subdivision(
+        points.points.begin() + start_index, points.points.begin() + end_index);
+    if (start_index == end_index) {
+      continue;
+    }
+    const double time_to_subdivision_end = subdivision.back().time;
+    // `subdivision_time` is the end of the measurement so sensor::Collator will
+    // send all other sensor data first.
+    const carto::common::Time subdivision_time =
+        time + carto::common::FromSeconds(time_to_subdivision_end);
+    auto it = sensor_to_previous_subdivision_time_.find(sensor_id);
+    if (it != sensor_to_previous_subdivision_time_.end() &&
+        it->second >= subdivision_time) {
+//      LOG(WARNING) << "Ignored subdivision of a LaserScan message from sensor "
+//                   << sensor_id << " because previous subdivision time "
+//                   << it->second << " is not before current subdivision time "
+//                   << subdivision_time;
+      continue;
+    }
+    sensor_to_previous_subdivision_time_[sensor_id] = subdivision_time;
+    for (auto& point : subdivision) {
+      point.time -= time_to_subdivision_end;
+    }
+    CHECK_EQ(subdivision.back().time, 0.f);
+    const auto lasers_removed = HandleRangefinderRemover(sensor_id, subdivision_time, frame_id, subdivision);
+  }
+  return lasers_removed;
+}
+
+
 void SensorBridge::HandleRangefinder(
     const std::string& sensor_id, const carto::common::Time time,
     const std::string& frame_id, const carto::sensor::TimedPointCloud& ranges) {
@@ -239,13 +285,42 @@ void SensorBridge::HandleRangefinder(
   }
   const auto sensor_to_tracking =
       tf_bridge_.LookupToTracking(time, CheckNoLeadingSlash(frame_id));
+  std::cout << "sensor_bridge: Handlerangefinder" << std::endl;
   if (sensor_to_tracking != nullptr) {
     trajectory_builder_->AddSensorData(
+
         sensor_id, carto::sensor::TimedPointCloudData{
                        time, sensor_to_tracking->translation().cast<float>(),
                        carto::sensor::TransformTimedPointCloud(
                            ranges, sensor_to_tracking->cast<float>())});
   }
 }
+
+const auto SensorBridge::HandleRangefinderRemover(
+    const std::string& sensor_id, const carto::common::Time time,
+    const std::string& frame_id, const carto::sensor::TimedPointCloud& ranges) {
+  if (!ranges.empty()) {
+    CHECK_LE(ranges.back().time, 0.f);
+  }
+  const auto sensor_to_tracking =
+      tf_bridge_.LookupToTracking(time, CheckNoLeadingSlash(frame_id));
+  std::cout << "sensor_bridge: Handlerangefinder" << std::endl;
+  if (sensor_to_tracking != nullptr) {
+    trajectory_builder_->AddSensorData(
+
+    		// no void, return carto::sensor... lines 249-253
+    		// addd to header, pass it along chain
+    		// in node, return
+        sensor_id, carto::sensor::TimedPointCloudData{
+                       time, sensor_to_tracking->translation().cast<float>(),
+                       carto::sensor::TransformTimedPointCloud(
+                           ranges, sensor_to_tracking->cast<float>())});
+  }
+  return carto::sensor::TimedPointCloudData{
+      time, sensor_to_tracking->translation().cast<float>(),
+      carto::sensor::TransformTimedPointCloud(
+          ranges, sensor_to_tracking->cast<float>())};
+}
+
 
 }  // namespace cartographer_ros

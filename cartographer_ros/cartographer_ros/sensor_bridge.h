@@ -66,7 +66,7 @@ class SensorBridge {
                         const sensor_msgs::Imu::ConstPtr& msg);
   void HandleLaserScanMessage(const std::string& sensor_id,
                               const sensor_msgs::LaserScan::ConstPtr& msg);
-  void HandleLaserScanRemoveMessage(const std::string& sensor_id,
+  const auto HandleLaserScanRemoveMessage(const std::string& sensor_id,
                               const sensor_msgs::LaserScan::ConstPtr& msg);
   void HandleMultiEchoLaserScanMessage(
       const std::string& sensor_id,
@@ -81,10 +81,18 @@ class SensorBridge {
       const std::string& sensor_id, ::cartographer::common::Time start_time,
       const std::string& frame_id,
       const ::cartographer::sensor::PointCloudWithIntensities& points);
+  const auto HandleLaserScanRemover(
+        const std::string& sensor_id, ::cartographer::common::Time start_time,
+        const std::string& frame_id,
+        const ::cartographer::sensor::PointCloudWithIntensities& points);
   void HandleRangefinder(const std::string& sensor_id,
                          ::cartographer::common::Time time,
                          const std::string& frame_id,
                          const ::cartographer::sensor::TimedPointCloud& ranges);
+  const auto HandleRangefinderRemover(const std::string& sensor_id,
+                           ::cartographer::common::Time time,
+                           const std::string& frame_id,
+                           const ::cartographer::sensor::TimedPointCloud& ranges);
 
   const int num_subdivisions_per_laser_scan_;
   std::map<std::string, cartographer::common::Time>

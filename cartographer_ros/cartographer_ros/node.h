@@ -29,6 +29,7 @@
 #include "cartographer/mapping/map_builder_interface.h"
 #include "cartographer/mapping/pose_extrapolator.h"
 #include "cartographer_ros/map_builder_bridge.h"
+#include "cartographer/mapping/internal/2d/pose_graph_2d.h"
 #include "cartographer_ros/metrics/family_factory.h"
 #include "cartographer_ros/node_constants.h"
 #include "cartographer_ros/node_options.h"
@@ -186,6 +187,7 @@ class Node {
   absl::Mutex mutex_;
   std::unique_ptr<cartographer_ros::metrics::FamilyFactory> metrics_registry_;
   MapBuilderBridge map_builder_bridge_ GUARDED_BY(mutex_);
+  PoseGraph2D pose_graph_2d_ GUARDED_BY(mutex_);
 
   ::ros::NodeHandle node_handle_;
   ::ros::Publisher submap_list_publisher_;
