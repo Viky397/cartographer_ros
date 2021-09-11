@@ -871,11 +871,12 @@ void Node::HandleLaserScanRemoveMessage(const int trajectory_id,
   }
   std::cout << "HANDLElaserRemoveMESSAGGE" << std::endl;
 
-  map_builder_bridge_.sensor_bridge(trajectory_id)
+  carto::sensor::TimedPointCloudData returned_lasers = map_builder_bridge_.sensor_bridge(trajectory_id)
       ->HandleLaserScanRemoveMessage(sensor_id, msg);
 
   auto& map_builder = map_builder_bridge_.getMapBuilder();
-  map_builder.AddLaserRemoveData();
+  map_builder->pose_graph()->AddLaserRemoveData(trajectory_id,
+		     returned_lasers);
 
   // refer to laser insertion pipeline,
 }
